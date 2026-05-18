@@ -8,7 +8,6 @@ import {
 } from 'lucide-react';
 import API from '../utils/api';
 import CommandPalette from './ui/CommandPalette';
-import ThemeSwitcher from './ui/ThemeSwitcher';
 
 const Layout = () => {
   const { user, logout } = useAuthStore();
@@ -150,10 +149,6 @@ const Layout = () => {
             </Link>
           </div>
 
-          {/* Theme Switcher */}
-          <div className="mt-4 pt-4 border-t border-white/5">
-            <ThemeSwitcher />
-          </div>
         </div>
 
         {/* User section */}

@@ -1,13 +1,31 @@
 import LeaveRequest from '../models/LeaveRequest.js';
+import Notification from '../models/Notification.js';
 
-// @desc    Create a leave request (Student)
+// @desc    Create a leave request
 // @route   POST /api/leaves
-// @access  Private/Student
+// @access  Private/Student or Faculty
 const createLeaveRequest = async (req, res, next) => {
   try {
     const { reason, fromDate, toDate } = req.body;
+    
+    // Date validation
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const start = new Date(fromDate);
+    const end = new Date(toDate);
+
+    if (start < today) {
+      res.status(400);
+      throw new Error('Leave request cannot be in the past');
+    }
+    if (end < start) {
+      res.status(400);
+      throw new Error('To Date cannot be before From Date');
+    }
+
     const leave = await LeaveRequest.create({
-      student: req.user._id,
+      user: req.user._id,
+      userRole: req.user.role,
       reason,
       fromDate,
       toDate,
@@ -19,7 +37,7 @@ const createLeaveRequest = async (req, res, next) => {
   }
 };
 
-// @desc    Get all leave requests (Admin/Faculty) or own (Student)
+// @desc    Get all leave requests (Admin/Faculty) or own (Student/Faculty)
 // @route   GET /api/leaves
 // @access  Private
 const getLeaveRequests = async (req, res, next) => {
@@ -28,14 +46,14 @@ const getLeaveRequests = async (req, res, next) => {
     let filter = {};
 
     if (role === 'Student') {
-      filter = { student: _id };
+      filter = { user: _id };
     } else if (role === 'Faculty') {
-      filter = { department: req.user.department };
+      filter = { $or: [{ user: _id }, { department: req.user.department, userRole: 'Student' }] };
     }
     // Admin sees all
 
     const leaves = await LeaveRequest.find(filter)
-      .populate('student', 'name email registerNumber department')
+      .populate('user', 'name email registerNumber department role')
       .populate('approvedBy', 'name role')
       .sort({ createdAt: -1 });
     res.json(leaves);
@@ -62,8 +80,16 @@ const updateLeaveStatus = async (req, res, next) => {
     leave.approvedBy = req.user._id;
     await leave.save();
 
+    // Send notification
+    await Notification.create({
+      title: `Leave Request ${status}`,
+      message: `Your leave request from ${new Date(leave.fromDate).toLocaleDateString()} to ${new Date(leave.toDate).toLocaleDateString()} has been ${status.toLowerCase()}.`,
+      targetUser: leave.user,
+      createdBy: req.user._id,
+    });
+
     const populated = await leave.populate([
-      { path: 'student', select: 'name email registerNumber department' },
+      { path: 'user', select: 'name email registerNumber department role' },
       { path: 'approvedBy', select: 'name role' },
     ]);
     res.json(populated);
@@ -83,8 +109,8 @@ const deleteLeaveRequest = async (req, res, next) => {
       throw new Error('Leave request not found');
     }
 
-    // Only the student who created it or admin can delete
-    if (leave.student.toString() !== req.user._id.toString() && req.user.role !== 'Admin') {
+    // Only the user who created it or admin can delete
+    if (leave.user.toString() !== req.user._id.toString() && req.user.role !== 'Admin') {
       res.status(403);
       throw new Error('Not authorized to delete this request');
     }

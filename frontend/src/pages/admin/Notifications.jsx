@@ -9,8 +9,9 @@ const Notifications = () => {
   const toast = useToast();
 
   const fetchNotifications = async () => {
-    try { const res = await API.get('/notifications'); setNotifications(res.data); } catch {} finally { setLoading(false); }
+    try { const res = await API.get('/notifications'); setNotifications(res.data); } catch (e) { console.error(e); } finally { setLoading(false); }
   };
+  // eslint-disable-next-line
   useEffect(() => { fetchNotifications(); }, []);
 
   const handleSend = async (e) => {
@@ -23,7 +24,7 @@ const Notifications = () => {
   };
 
   const handleDelete = async (id) => {
-    try { await API.delete(`/notifications/${id}`); toast.success('Deleted'); fetchNotifications(); } catch { toast.error('Failed'); }
+    try { await API.delete(`/notifications/${id}`); toast.success('Deleted'); fetchNotifications(); } catch (e) { console.error(e); toast.error('Failed'); }
   };
 
   if (loading) return <div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-2 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin"/></div>;

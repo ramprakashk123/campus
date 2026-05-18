@@ -11,6 +11,8 @@ const StudentLeave = () => {
   const [form, setForm] = useState({ reason: '', fromDate: '', toDate: '' });
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  
+  const today = new Date().toISOString().split('T')[0];
 
   useEffect(() => { API.get('/leaves').then((r) => setLeaves(r.data)).catch(() => {}).finally(() => setLoading(false)); }, []);
 
@@ -41,8 +43,8 @@ const StudentLeave = () => {
           <div className="space-y-4">
             <div><label className="block text-sm text-slate-400 mb-1">Reason</label><textarea value={form.reason} onChange={(e) => setForm({ ...form, reason: e.target.value })} className="input-dark h-24 resize-none" placeholder="Explain your reason for leave..." /></div>
             <div className="grid grid-cols-2 gap-4">
-              <div><label className="block text-sm text-slate-400 mb-1">From Date</label><input type="date" value={form.fromDate} onChange={(e) => setForm({ ...form, fromDate: e.target.value })} className="input-dark" /></div>
-              <div><label className="block text-sm text-slate-400 mb-1">To Date</label><input type="date" value={form.toDate} onChange={(e) => setForm({ ...form, toDate: e.target.value })} className="input-dark" /></div>
+              <div><label className="block text-sm text-slate-400 mb-1">From Date</label><input type="date" min={today} value={form.fromDate} onChange={(e) => setForm({ ...form, fromDate: e.target.value })} className="input-dark" /></div>
+              <div><label className="block text-sm text-slate-400 mb-1">To Date</label><input type="date" min={form.fromDate || today} value={form.toDate} onChange={(e) => setForm({ ...form, toDate: e.target.value })} className="input-dark" /></div>
             </div>
             <button onClick={handleSubmit} disabled={submitting} className="btn-primary"><Send size={14} /> {submitting ? 'Submitting...' : 'Submit Request'}</button>
           </div>

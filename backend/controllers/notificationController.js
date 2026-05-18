@@ -21,15 +21,15 @@ const createNotification = async (req, res, next) => {
   }
 };
 
-// @desc    Get notifications for current user's role
+// @desc    Get notifications for current user
 // @route   GET /api/notifications
 // @access  Private
 const getNotifications = async (req, res, next) => {
   try {
-    const { role } = req.user;
+    const { role, _id } = req.user;
 
     const notifications = await Notification.find({
-      $or: [{ targetRole: 'All' }, { targetRole: role }],
+      $or: [{ targetRole: 'All' }, { targetRole: role }, { targetUser: _id }],
     })
       .populate('createdBy', 'name role')
       .sort({ createdAt: -1 })

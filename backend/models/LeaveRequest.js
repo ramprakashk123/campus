@@ -2,9 +2,13 @@ import mongoose from 'mongoose';
 
 const leaveRequestSchema = new mongoose.Schema(
   {
-    student: {
+    user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
+      required: true,
+    },
+    userRole: {
+      type: String,
       required: true,
     },
     reason: {

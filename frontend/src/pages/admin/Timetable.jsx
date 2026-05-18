@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Trash2, Edit3, Clock, MapPin } from 'lucide-react';
+import { Plus, Trash2, Wand2 } from 'lucide-react';
 import Modal from '../../components/ui/Modal';
 import API from '../../utils/api';
 
@@ -14,6 +14,7 @@ const AdminTimetable = () => {
   const [modal, setModal] = useState(false);
   const [form, setForm] = useState({ course: '', faculty: '', day: 'Monday', startTime: '09:00', endTime: '10:00', room: '' });
   const [loading, setLoading] = useState(true);
+  const [generating, setGenerating] = useState(false);
 
   useEffect(() => {
     Promise.all([API.get('/timetable'), API.get('/courses'), API.get('/users/faculty')])
@@ -36,6 +37,17 @@ const AdminTimetable = () => {
     setEntries(entries.filter((e) => e._id !== id));
   };
 
+  const handleGenerate = async () => {
+    if (!confirm('WARNING: This will delete the current timetable and automatically generate a new one. Continue?')) return;
+    setGenerating(true);
+    try {
+      await API.post('/timetable/generate');
+      const res = await API.get('/timetable');
+      setEntries(res.data);
+    } catch (e) { alert(e.response?.data?.message || 'Error generating timetable'); }
+    finally { setGenerating(false); }
+  };
+
   const courseColorMap = {};
   courses.forEach((c, i) => { courseColorMap[c._id] = COLORS[i % COLORS.length]; });
 
@@ -47,7 +59,13 @@ const AdminTimetable = () => {
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
         <div><h1 className="text-2xl font-bold text-white">Timetable Management</h1><p className="text-slate-400 mt-1">Create and manage weekly schedules</p></div>
-        <button onClick={() => setModal(true)} className="btn-primary"><Plus size={16} /> Add Slot</button>
+        <div className="flex gap-2">
+          <button onClick={handleGenerate} disabled={generating} className="btn-secondary">
+            {generating ? <div className="w-4 h-4 border-2 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin" /> : <Wand2 size={16} />}
+            {generating ? 'Generating...' : 'Auto Generate'}
+          </button>
+          <button onClick={() => setModal(true)} className="btn-primary"><Plus size={16} /> Add Slot</button>
+        </div>
       </div>
 
       {/* Weekly Grid */}

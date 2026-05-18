@@ -21,7 +21,7 @@ const AdminLeaveRequests = () => {
 
   const handleExport = () => {
     const data = filtered.map((l) => ({
-      Student: l.student?.name, Email: l.student?.email, RegNo: l.student?.registerNumber,
+      User: l.user?.name, Role: l.userRole, Email: l.user?.email, RegNo: l.user?.registerNumber,
       Reason: l.reason, From: new Date(l.fromDate).toLocaleDateString(), To: new Date(l.toDate).toLocaleDateString(),
       Status: l.status, ApprovedBy: l.approvedBy?.name || '—',
     }));
@@ -35,7 +35,7 @@ const AdminLeaveRequests = () => {
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
-        <div><h1 className="text-2xl font-bold text-white">Leave Requests</h1><p className="text-slate-400 mt-1">Manage student leave applications</p></div>
+        <div><h1 className="text-2xl font-bold text-white">Leave Requests</h1><p className="text-slate-400 mt-1">Manage student and faculty leave applications</p></div>
         <button onClick={handleExport} className="btn-secondary btn-sm"><Download size={14} /> Export CSV</button>
       </div>
 
@@ -51,10 +51,10 @@ const AdminLeaveRequests = () => {
             <div key={leave._id} className="glass-card p-5">
               <div className="flex items-start justify-between">
                 <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center text-white font-bold text-sm">{leave.student?.name?.charAt(0)}</div>
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center text-white font-bold text-sm">{leave.user?.name?.charAt(0) || 'U'}</div>
                   <div>
-                    <h3 className="text-sm font-semibold text-white">{leave.student?.name}</h3>
-                    <p className="text-xs text-slate-500">{leave.student?.registerNumber} • {leave.student?.department}</p>
+                    <h3 className="text-sm font-semibold text-white">{leave.user?.name || 'Unknown User'} {leave.userRole && <span className="text-xs font-mono text-indigo-400 ml-2">[{leave.userRole}]</span>}</h3>
+                    <p className="text-xs text-slate-500">{[leave.user?.registerNumber, leave.user?.department].filter(Boolean).join(' • ')}</p>
                     <p className="text-xs text-slate-400 mt-2">{leave.reason}</p>
                     <p className="text-xs text-slate-600 mt-1"><Clock size={10} className="inline mr-1" />{new Date(leave.fromDate).toLocaleDateString()} — {new Date(leave.toDate).toLocaleDateString()}</p>
                   </div>

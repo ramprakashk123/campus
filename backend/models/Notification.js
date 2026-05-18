@@ -15,6 +15,10 @@ const notificationSchema = new mongoose.Schema(
       enum: ['All', 'Student', 'Faculty'],
       default: 'All',
     },
+    targetUser: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+    },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',

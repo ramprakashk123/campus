@@ -16,10 +16,11 @@ const ManageUsers = () => {
     try {
       const res = await API.get('/users');
       setUsers(res.data);
-    } catch { }
+    } catch (e) { console.error(e); }
     finally { setLoading(false); }
   };
 
+  // eslint-disable-next-line
   useEffect(() => { fetchUsers(); }, []);
 
   const handleCreateFaculty = async (e) => {
